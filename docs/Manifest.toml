@@ -270,7 +270,7 @@ version = "0.1.1"
 
 [[deps.FactorizedEmbeddings]]
 deps = ["Flux"]
-path = ".."
+path = "/u/sauves/FactorizedEmbeddings"
 uuid = "88092329-4f12-4f13-b7b9-2dce51e7f2f8"
 version = "0.1.0"
 

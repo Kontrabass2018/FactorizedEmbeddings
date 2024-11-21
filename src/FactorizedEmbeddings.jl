@@ -1,6 +1,5 @@
 module FactorizedEmbeddings
 
-using Flux
 # Write your package code here.
 
 export fit, fit_transform
