@@ -132,7 +132,7 @@ end
 
 
 """
-   infer(trained_FE, train_data, train_ids, test_data, test_ids,  samples, genes, params_dict
+   infer(trained_FE, train_data, train_ids, test_data, test_ids,  samples, genes, params_dict)
 
 Infers new data with the pre-trained model.
 """
