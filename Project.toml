@@ -2,3 +2,6 @@ name = "FactorizedEmbeddings"
 uuid = "88092329-4f12-4f13-b7b9-2dce51e7f2f8"
 authors = ["sauves <leonardsauve@gmail.com>"]
 version = "0.1.0"
+
+[deps]
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"

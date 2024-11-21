@@ -1,5 +1,7 @@
 module FactorizedEmbeddings
 
+using Flux
+
 export fit, fit_transform, infer
 
 
