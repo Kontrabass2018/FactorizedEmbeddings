@@ -5,5 +5,9 @@ fit
 ```
 
 ```@docs
+fit_transform
+```
+
+```@docs
 infer
 ```
