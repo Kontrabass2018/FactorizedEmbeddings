@@ -5,5 +5,5 @@ fit
 ```
 
 ```@docs
-fit_transform
+infer
 ```
