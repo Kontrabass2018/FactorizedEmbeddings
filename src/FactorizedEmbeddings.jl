@@ -2,7 +2,7 @@ module FactorizedEmbeddings
 
 using Flux
 
-export fit, fit_transform, infer
+export generate_params, fit, fit_transform, infer
 
 
 function prep_FE(data::Matrix, device=gpu; order = "shuffled")
@@ -88,7 +88,21 @@ function train!(params, X, Y, model)
     return model 
 end 
 
-generate_params(X_data, emb_size, nsteps_dim_redux, l2_val; emb_size_2 = 100) = return Dict( 
+
+"""
+    generate_params(X_data::AbstractArray; 
+                    emb_size::Int, emb_size_2::Int = 100, 
+                    nsteps_dim_redux::Int, l2_val::Float64, 
+                    fe_layers_size = [100, 50, 50]
+               )
+
+Function that takes input hyper-parameters and outputs a dictonary. 
+"""
+generate_params(X_data::AbstractArray; 
+                    emb_size::Int, emb_size_2::Int = 100, 
+                    nsteps_dim_redux::Int, l2_val::Float64, 
+                    fe_layers_size = [100, 50, 50]
+               ) = return Dict( 
     ## run infos 
     # "session_id" => session_id,  "modelid" =>  "$(bytes2hex(sha256("$(now())"))[1:Int(floor(end/3))])",
     # "outpath"=>outpath, 
@@ -98,7 +112,7 @@ generate_params(X_data, emb_size, nsteps_dim_redux, l2_val; emb_size_2 = 100) = 
     ## optim infos 
     "lr" => 5e-3, "l2" =>l2_val,"nsteps" => nsteps_dim_redux, "nsteps_inference" => Int(floor(nsteps_dim_redux * 0.1)), "nsamples_batchsize" => 4,
     ## model infos
-    "emb_size_1" => emb_size, "emb_size_2" => emb_size_2, "fe_layers_size"=> [100, 50, 50],
+    "emb_size_1" => emb_size, "emb_size_2" => emb_size_2, "fe_layers_size"=> fe_layers_size,
     )
 
 
@@ -110,7 +124,10 @@ generate_params(X_data, emb_size, nsteps_dim_redux, l2_val; emb_size_2 = 100) = 
 This function instanciates a Factorized Embeddings model with default or imputed parameters. Then trains the model on the input data and returns the trained model.
 """
 function fit(X_data; dim_redux_size::Int=2, nsteps::Int=1000, l2::Float64=1e-7)
-    FE_params_dict = generate_params(X_data, dim_redux_size, nsteps, l2)
+    FE_params_dict = generate_params(X_data; 
+        emb_size=dim_redux_size, 
+        nsteps_dim_redux=nsteps, 
+        l2_val=l2)
     X, Y = prep_FE(X_data);
     ## init model
     model = FE_model(FE_params_dict);
@@ -118,6 +135,22 @@ function fit(X_data; dim_redux_size::Int=2, nsteps::Int=1000, l2::Float64=1e-7)
     model = train!(FE_params_dict, X, Y, model)
     return model 
 end 
+
+# fit function 
+"""
+    fit(X_data, FE_params::Dict)
+
+This function instanciates a Factorized Embeddings model imputed hyper-parameter dictionary. Then trains the model on the input data and returns the trained model.
+"""
+function fit(X_data, FE_params::Dict)
+    X, Y = prep_FE(X_data);
+    ## init model
+    model = FE_model(FE_params);
+    # train loop
+    model = train!(FE_params, X, Y, model)
+    return model 
+end 
+
 
 # fit_transform function 
 """
@@ -130,6 +163,16 @@ function fit_transform(X_data; dim_redux_size::Int=2, nsteps::Int=1000, l2::Floa
     return cpu(model[1][1].weight) 
 end 
 
+# fit_transform function 
+"""
+    fit_transform(X_data; FE_params::Dict)
+
+This function instanciates a Factorized Embeddings model imputed hyper-parameter dictionary. Then trains the model on the input data and returns the dimensionality-reduced sample embedding.
+"""
+function fit_transform(X_data; FE_params::Dict)
+    model = fit(X_data, FE_params)
+    return cpu(model[1][1].weight) 
+end 
 
 """
    infer(trained_FE, train_data, train_ids, test_data, test_ids,  samples, genes, params_dict)
