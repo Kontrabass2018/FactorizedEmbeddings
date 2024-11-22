@@ -25,7 +25,7 @@ function prep_FE(data::Matrix, device=gpu; order = "shuffled")
         end
     end 
     id_range = 1:length(values)
-    order == "shuffled" ? id_range = shuffle(id_range) : nothing
+    order == "shuffled" ? id_range = Random.shuffle(id_range) : nothing
     return (device(sample_index[id_range]), device(gene_index[id_range])), device(vec(values[id_range]))
 end 
 
