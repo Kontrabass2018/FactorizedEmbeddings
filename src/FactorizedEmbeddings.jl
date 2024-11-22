@@ -88,17 +88,17 @@ function train!(params, X, Y, model)
     return model 
 end 
 
-generate_params(X_data, emb_size, nsteps_dim_redux, l2_val) = return Dict( 
+generate_params(X_data, emb_size, nsteps_dim_redux, l2_val; emb_size_2 = 100) = return Dict( 
     ## run infos 
     # "session_id" => session_id,  "modelid" =>  "$(bytes2hex(sha256("$(now())"))[1:Int(floor(end/3))])",
     # "outpath"=>outpath, 
-    "machine_id"=>strip(read(`hostname`, String)), "device" => "$(device())", 
+    "machine_id"=>strip(read(`hostname`, String)), # "device" => "$(CUDA.device())", 
     ## data infos 
     "nsamples" =>size(X_data)[1], "ngenes"=> size(X_data)[2],  
     ## optim infos 
     "lr" => 5e-3, "l2" =>l2_val,"nsteps" => nsteps_dim_redux, "nsteps_inference" => Int(floor(nsteps_dim_redux * 0.1)), "nsamples_batchsize" => 4,
     ## model infos
-    "emb_size_1" => emb_size, "emb_size_2" => 100, "fe_layers_size"=> [100, 50, 50],
+    "emb_size_1" => emb_size, "emb_size_2" => emb_size_2, "fe_layers_size"=> [100, 50, 50],
     )
 
 
