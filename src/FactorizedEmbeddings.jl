@@ -1,6 +1,9 @@
 module FactorizedEmbeddings
 
 using Flux
+using Random
+using ProgressMeter
+using Statistics 
 
 export generate_params, fit, fit_transform, infer
 
@@ -66,7 +69,7 @@ function train!(params, X, Y, model)
     nsamples_batchsize = params["nsamples_batchsize"]
     batchsize = params["ngenes"] * nsamples_batchsize
     nminibatches = Int(floor(params["nsamples"] / nsamples_batchsize))
-    opt = Flux.ADAM(params["lr"])
+    opt = Flux.Adam(params["lr"])
     p = Progress(params["nsteps"]; showspeed=true)
     for iter in 1:params["nsteps"]
         # Stochastic gradient descent with minibatches
@@ -217,7 +220,7 @@ function infer(trained_FE, train_data, train_ids, test_data, test_ids,  samples,
     batchsize = params_dict["ngenes"] * nsamples_batchsize
     nminibatches = Int(floor(length(Y_test) / batchsize))
     
-    opt = Flux.ADAM(params_dict["lr"])
+    opt = Flux.Adam(params_dict["lr"])
     for iter in 1:params_dict["nsteps_inference"]
         cursor = (iter -1)  % nminibatches + 1
         mb_ids = collect((cursor -1) * batchsize + 1: min(cursor * batchsize, length(Y_test)))
