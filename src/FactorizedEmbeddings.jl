@@ -91,15 +91,15 @@ end
 
 """
     generate_params(X_data::AbstractArray; 
-                    emb_size::Int, emb_size_2::Int = 100, 
-                    nsteps_dim_redux::Int, l2_val::Float64, 
+                    emb_size::Int=2, emb_size_2::Int=100, 
+                    nsteps_dim_redux::Int=1000, l2_val::Float64=1e-7, 
                     fe_layers_size = [100, 50, 50]
                )
 
 Function that takes input hyper-parameters and outputs a dictonary. 
 """
 generate_params(X_data::AbstractArray; 
-                    emb_size::Int=2, emb_size_2::Int = 100, 
+                    emb_size::Int=2, emb_size_2::Int=100, 
                     nsteps_dim_redux::Int=1000, l2_val::Float64=1e-7, 
                     fe_layers_size = [100, 50, 50]
                ) = return Dict( 
