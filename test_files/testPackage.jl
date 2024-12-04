@@ -14,10 +14,10 @@ folds = split_train_test(TCGA_data[:,biotypes .== "protein_coding"]);
 
 train_data = folds[1]["train_x"];
 test_data = folds[1]["test_x"];
-model_params = generate_params(train_data, nsteps_dim_redux = 1_000, nsamples_batchsize=1)
-@time model = FactorizedEmbeddings.fit(train_data, model_params;verbose = 1)
+model_params = generate_params(train_data, nsteps_dim_redux = 10_000, nsamples_batchsize=1)
+model = FactorizedEmbeddings.fit(train_data, model_params;verbose = 1);
 # infer
-infer_model, model_phase_1 = FactorizedEmbeddings.infer(model, train_data, test_data, model_params)
+infer_model, model_phase_1 = FactorizedEmbeddings.infer(model, train_data, test_data, model_params, verbose = 1)
 # plot 
 
 train_embed = cpu(model[1][1].weight)
