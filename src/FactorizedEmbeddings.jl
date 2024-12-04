@@ -4,6 +4,7 @@ using Flux
 using Random
 using ProgressMeter
 using Statistics 
+using Dates
 
 export generate_params, fit, fit_transform, infer
 
