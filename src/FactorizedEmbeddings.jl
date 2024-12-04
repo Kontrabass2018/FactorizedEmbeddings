@@ -9,13 +9,14 @@ using Dates
 export generate_params, fit, fit_transform, infer
 
 
-function prep_FE(data::Matrix, device=gpu; order = "shuffled")
+function prep_FE(data::Matrix, device=gpu; order = "shuffled", verbose = 0)
+    verbose > 0 && (println("Processing data..."))
     n, m = size(data)
     
     values = Array{Float32,2}(undef, (1, n * m))
     sample_index = Array{Int64,1}(undef, max(n * m, 1))
     gene_index = Array{Int64,1}(undef, max(n * m, 1))
-    
+    verbose > 0 && (p = Progress(n; showspeed=true))
     for i in 1:n
         for j in 1:m
             index = (i - 1) * m + j 
@@ -24,6 +25,7 @@ function prep_FE(data::Matrix, device=gpu; order = "shuffled")
             gene_index[index] = j # Int 
             
         end
+        verbose > 0 && next!(p)
     end 
     id_range = 1:length(values)
     order == "shuffled" ? id_range = Random.shuffle(id_range) : nothing
@@ -65,8 +67,20 @@ function my_cor(X::AbstractVector, Y::AbstractVector)
     return cov / sigma_X / sigma_Y
 end 
 
+function reset_embedding_layer(FE_net, new_embed)
+    hlayers = deepcopy(FE_net[2:end])
+    test_FE = Flux.Chain(
+        Flux.Parallel(vcat, 
+            Flux.Embedding(new_embed),
+            deepcopy(FE_net[1][2])
+        ),
+        hlayers...
+    ) |> gpu
+    return test_FE    
+end 
 
-function train!(params, X, Y, model)
+function train!(params, X, Y, model;verbose = 0)
+    verbose > 0 && (println("Training model..."))
     nsamples_batchsize = params["nsamples_batchsize"]
     batchsize = params["ngenes"] * nsamples_batchsize
     nminibatches = Int(floor(params["nsamples"] / nsamples_batchsize))
@@ -148,13 +162,12 @@ end
 This function instanciates a Factorized Embeddings model imputed hyper-parameter dictionary. Then trains the model on the input data and returns the trained model.
 """
 function fit(X_data, FE_params::Dict;verbose::Int=0)
-    verbose > 0 && (println("Processing data..."))
-    X, Y = prep_FE(X_data);
+    
+    X, Y = prep_FE(X_data;verbose = verbose);
     ## init model
     model = FE_model(FE_params);
     # train loop
-    verbose > 0 && (println("Training model..."))
-    model = train!(FE_params, X, Y, model)
+    model = train!(FE_params, X, Y, model;verbose = verbose)
     return model 
 end 
 

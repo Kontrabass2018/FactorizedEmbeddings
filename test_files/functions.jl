@@ -10,6 +10,11 @@ using CUDA
 using HDF5
 using CSV 
 using Random
+
+using Flux
+using DataFrames
+using CairoMakie
+
 function load_tcga_data(infilename; shfl = true)
     infile = h5open(infilename)
     TCGA_data = infile["data"][:,:]
