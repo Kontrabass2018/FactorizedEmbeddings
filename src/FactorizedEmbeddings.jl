@@ -142,16 +142,16 @@ generate_params(X_data::AbstractArray;
 
 This function instanciates a Factorized Embeddings model with default or imputed parameters. Then trains the model on the input data and returns the trained model.
 """
-function fit(X_data; dim_redux_size::Int=2, nsteps::Int=1000, l2::Float64=1e-7)
+function fit(X_data; dim_redux_size::Int=2, nsteps::Int=1000, l2::Float64=1e-7, verbose::Int=0)
     FE_params_dict = generate_params(X_data; 
         emb_size=dim_redux_size, 
         nsteps_dim_redux=nsteps, 
         l2_val=l2)
-    X, Y = prep_FE(X_data);
+    X, Y = prep_FE(X_data, verbose=verbose);
     ## init model
     model = FE_model(FE_params_dict);
     # train loop
-    model = train!(FE_params_dict, X, Y, model)
+    model = train!(FE_params_dict, X, Y, model, verbose = verbose)
     return model 
 end 
 
@@ -174,32 +174,36 @@ end
 
 # fit_transform function 
 """
-    fit_transform(X_data; dim_redux_size::Int=2, nsteps::Int=1000, l2::Float64=1e-7)
+    fit_transform(X_data; dim_redux_size::Int=2, nsteps::Int=1000, l2::Float64=1e-7, verbose::Int = 0)
 
 This function instanciates a Factorized Embeddings model with default or imputed parameters. Then trains the model on the input data and returns the dimensionality-reduced sample embedding.
 """
-function fit_transform(X_data; dim_redux_size::Int=2, nsteps::Int=1000, l2::Float64=1e-7)
-    model = fit(X_data, dim_redux_size=dim_redux_size, nsteps = nsteps, l2=l2)
+function fit_transform(X_data; dim_redux_size::Int=2, nsteps::Int=1000, l2::Float64=1e-7, verbose::Int = 0)
+    model = fit(X_data, dim_redux_size=dim_redux_size, nsteps = nsteps, l2=l2, verbose = verbose)
     return cpu(model[1][1].weight) 
 end 
 
 # fit_transform function 
 """
-    fit_transform(X_data; FE_params::Dict)
+    fit_transform(X_data, FE_params::Dict;verbose::Int=0)
 
 This function instanciates a Factorized Embeddings model imputed hyper-parameter dictionary. Then trains the model on the input data and returns the dimensionality-reduced sample embedding.
 """
-function fit_transform(X_data; FE_params::Dict)
-    model = fit(X_data, FE_params)
+function fit_transform(X_data, FE_params::Dict;verbose::Int=0)
+    model = fit(X_data, FE_params, verbose = verbose)
     return cpu(model[1][1].weight) 
 end 
 
 """
    infer(trained_FE, train_data, test_data, params_dict;verbose=0)
 
-Infers new data with the pre-trained model.
+Infers new data with the pre-trained model. Input parameters.
+trained_FE: the pre-trained Flux DNN model.
+train_data: the training dataset.
+test_data: the test dataset. 
+params_dict: Dictionary of hyper-parameters that was set during the training phase.
 """
-function infer(trained_FE, train_data, test_data, params_dict;verbose=0)
+function infer(trained_FE, train_data, test_data, params_dict::Dict;verbose=0)
     start_timer = now()
     tst_elapsed = []
     ## generate X and Y test data. 
