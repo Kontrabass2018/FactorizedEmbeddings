@@ -211,7 +211,7 @@ function infer(trained_FE, train_data, test_data, test_ids,  samples, genes, par
         # if infer_patient_id % 100 == 0
         #     println("completed: $(round(infer_patient_id * 100/ size(test_data)[1], digits = 2))\t%")
         # end
-        next!(p; next!(p; showvalues=[(:elapsed,(now() - start_timer).value / 1000)])) 
+        next!(p; showvalues=[(:elapsed,(now() - start_timer).value / 1000)])
     end 
     push!(tst_elapsed, (now() - start_timer).value / 1000 )
     println("distances to target sample. $(tst_elapsed[end]) s")
