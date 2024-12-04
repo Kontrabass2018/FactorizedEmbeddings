@@ -183,11 +183,11 @@ end
 
 Infers new data with the pre-trained model.
 """
-function infer(trained_FE, train_data, train_ids, test_data, test_ids,  samples, genes, params_dict)
+function infer(trained_FE, train_data, test_data, test_ids,  samples, genes, params_dict)
     start_timer = now()
     tst_elapsed = []
     ## generate X and Y test data. 
-    X_train, Y_train = prep_FE(train_data, samples[train_ids], genes, order = "per_sample")
+    X_train, Y_train = prep_FE(train_data;order="per_sample")
     nsamples_batchsize = 1
     batchsize = params_dict["ngenes"] * nsamples_batchsize
     nminibatches = Int(floor(params_dict["nsamples"] / nsamples_batchsize))
@@ -204,24 +204,28 @@ function infer(trained_FE, train_data, train_ids, test_data, test_ids,  samples,
     println("Computing distances to target samples...")
     new_embed = zeros(params_dict["emb_size_1"], size(test_data)[1])
     test_data_G = gpu(test_data)
+    p = Progress(size(test_data)[1]; showspeed=true)
     for infer_patient_id in 1:size(test_data)[1]
         EuclideanDists = sum((infered_train .- vec(test_data_G[infer_patient_id, :])') .^ 2, dims = 2)
         new_embed[:,infer_patient_id] .= cpu(trained_FE[1][1].weight[:,findfirst(EuclideanDists .== minimum(EuclideanDists))[1]])
-        if infer_patient_id % 100 == 0
-            println("completed: $(round(infer_patient_id * 100/ size(test_data)[1], digits = 2))\t%")
-        end 
+        # if infer_patient_id % 100 == 0
+        #     println("completed: $(round(infer_patient_id * 100/ size(test_data)[1], digits = 2))\t%")
+        # end
+        next!(p; next!(p; showvalues=[(:elapsed,(now() - start_timer).value / 1000)])) 
     end 
     push!(tst_elapsed, (now() - start_timer).value / 1000 )
     println("distances to target sample. $(tst_elapsed[end]) s")
     println("Optimizing model with test samples optimal initial positions...")
     inference_model = reset_embedding_layer(trained_FE, new_embed)
+    model_phase_1 = cpu(inference_model[1][1].weight)
     # fig1 = plot_train_test_patient_embed(trained_FE, inference_model, labs, train_ids, test_ids, params_dict);
-    X_test, Y_test = prep_FE(test_data, samples[test_ids],  genes, order = "per_sample");
+    X_test, Y_test = prep_FE(test_data;order = "per_sample");
     nsamples_batchsize = params_dict["nsamples_batchsize"]
     batchsize = params_dict["ngenes"] * nsamples_batchsize
     nminibatches = Int(floor(length(Y_test) / batchsize))
     
     opt = Flux.Adam(params_dict["lr"])
+    p = Progress(params_dict["nsteps_inference"]; showspeed=true)
     for iter in 1:params_dict["nsteps_inference"]
         cursor = (iter -1)  % nminibatches + 1
         mb_ids = collect((cursor -1) * batchsize + 1: min(cursor * batchsize, length(Y_test)))
@@ -235,11 +239,11 @@ function infer(trained_FE, train_data, train_ids, test_data, test_ids,  samples,
         pearson = my_cor(inference_model(X_), Y_)
         Flux.update!(opt,ps, gs)
         push!(tst_elapsed, (now() - start_timer).value / 1000 )
-        iter % 1000 == 0 ?  println("$(iter) epoch $(Int(ceil(iter / nminibatches))) - $cursor /$nminibatches - TRAIN loss: $(lossval)\tpearson r: $pearson \t elapsed: $(tst_elapsed[end]) s") : nothing
+        # iter % 1000 == 0 ?  println("$(iter) epoch $(Int(ceil(iter / nminibatches))) - $cursor /$nminibatches - TRAIN loss: $(lossval)\tpearson r: $pearson \t elapsed: $(tst_elapsed[end]) s") : nothing
+        next!(p; next!(p; showvalues=[(:elapsed,(now() - start_timer).value / 1000), (:loss,lossval),(:pearson, pearson)])) 
     end 
     println("Final embedding $(tst_elapsed[end]) s")
-    # fig2 = plot_train_test_patient_embed(trained_FE, inference_model, labs, train_ids, test_ids, params_dict);
-    return inference_model, fig1, fig2
+    return inference_model, embed_phase_1
 end 
 
 end
