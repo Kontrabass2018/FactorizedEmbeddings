@@ -10,7 +10,7 @@ TCGA_data, labs, samples, genes, biotypes = fetch_data("TCGA_TPM_lab.h5", shfl =
 # @time model = FactorizedEmbeddings.fit(TCGA_data[:,biotypes .== "protein_coding"], model_params)
 
 
-folds = split_train_test(TCGA_data[:,biotypes .== "protein_coding"]);
+folds = split_train_test(TCGA_data);
 
 train_data = folds[1]["train_x"];
 test_data = folds[1]["test_x"];

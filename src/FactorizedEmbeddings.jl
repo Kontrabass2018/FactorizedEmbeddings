@@ -195,7 +195,7 @@ function fit_transform(X_data; FE_params::Dict)
 end 
 
 """
-   infer(trained_FE, train_data, train_ids, test_data, test_ids,  samples, genes, params_dict)
+   infer(trained_FE, train_data, test_data, params_dict;verbose=0)
 
 Infers new data with the pre-trained model.
 """
