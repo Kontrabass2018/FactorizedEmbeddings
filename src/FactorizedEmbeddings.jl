@@ -103,7 +103,8 @@ Function that takes input hyper-parameters and outputs a dictonary.
 """
 generate_params(X_data::AbstractArray; 
                     emb_size::Int=2, emb_size_2::Int=100, 
-                    nsteps_dim_redux::Int=1000, l2_val::Float64=1e-7, 
+                    nsteps_dim_redux::Int=1000, l2_val::Float64=1e-7,
+                    nsamples_batchsize::Int=1, 
                     fe_layers_size = [100, 50, 50]
                ) = return Dict( 
     ## run infos 
@@ -113,7 +114,7 @@ generate_params(X_data::AbstractArray;
     ## data infos 
     "nsamples" =>size(X_data)[1], "ngenes"=> size(X_data)[2],  
     ## optim infos 
-    "lr" => 5e-3, "l2" =>l2_val,"nsteps" => nsteps_dim_redux, "nsteps_inference" => Int(floor(nsteps_dim_redux * 0.1)), "nsamples_batchsize" => 4,
+    "lr" => 5e-3, "l2" =>l2_val,"nsteps" => nsteps_dim_redux, "nsteps_inference" => Int(floor(nsteps_dim_redux * 0.1)), "nsamples_batchsize" => nsamples_batchsize,
     ## model infos
     "emb_size_1" => emb_size, "emb_size_2" => emb_size_2, "fe_layers_size"=> fe_layers_size,
     )
