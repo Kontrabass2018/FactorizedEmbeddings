@@ -185,7 +185,7 @@ end
 
 Infers new data with the pre-trained model.
 """
-function infer(trained_FE, train_data, test_data, test_ids,  samples, genes, params_dict)
+function infer(trained_FE, train_data, test_data, params_dict)
     start_timer = now()
     tst_elapsed = []
     ## generate X and Y test data. 
