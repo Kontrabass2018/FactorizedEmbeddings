@@ -146,11 +146,13 @@ end
 
 This function instanciates a Factorized Embeddings model imputed hyper-parameter dictionary. Then trains the model on the input data and returns the trained model.
 """
-function fit(X_data, FE_params::Dict)
+function fit(X_data, FE_params::Dict;verbose::Int=0)
+    verbose > 0 && (println("Processing data..."))
     X, Y = prep_FE(X_data);
     ## init model
     model = FE_model(FE_params);
     # train loop
+    verbose > 0 && (println("Training model..."))
     model = train!(FE_params, X, Y, model)
     return model 
 end 
