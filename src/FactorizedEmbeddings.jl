@@ -240,7 +240,7 @@ function infer(trained_FE, train_data, test_data, test_ids,  samples, genes, par
         Flux.update!(opt,ps, gs)
         push!(tst_elapsed, (now() - start_timer).value / 1000 )
         # iter % 1000 == 0 ?  println("$(iter) epoch $(Int(ceil(iter / nminibatches))) - $cursor /$nminibatches - TRAIN loss: $(lossval)\tpearson r: $pearson \t elapsed: $(tst_elapsed[end]) s") : nothing
-        next!(p; next!(p; showvalues=[(:elapsed,(now() - start_timer).value / 1000), (:loss,lossval),(:pearson, pearson)])) 
+        next!(p; showvalues=[(:elapsed,(now() - start_timer).value / 1000), (:loss,lossval),(:pearson, pearson)])
     end 
     println("Final embedding $(tst_elapsed[end]) s")
     return inference_model, embed_phase_1
