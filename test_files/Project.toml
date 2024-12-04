@@ -1,0 +1,10 @@
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+FactorizedEmbeddings = "88092329-4f12-4f13-b7b9-2dce51e7f2f8"
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+cuDNN = "02a925ec-e4fe-4b08-9a7e-0d78e3d38ccd"
