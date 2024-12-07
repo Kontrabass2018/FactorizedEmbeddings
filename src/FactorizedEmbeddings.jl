@@ -6,7 +6,7 @@ using ProgressMeter
 using Statistics 
 using Dates
 
-export generate_params, fit, fit_transform, infer, train!, prep_FE, FE_model, reset_embedding_layer
+export generate_params, fit, fit!, fit_transform, infer, train!, prep_FE, FE_model, reset_embedding_layer
 
 
 
@@ -192,11 +192,11 @@ end
 
 # fit function 
 """
-    fit(X_data, model, FE_params::Dict)
+    fit!(X_data, model, FE_params::Dict)
 
 This function uses the inputed Factorized Embeddings model with pre-defined and imputed hyper-parameter dictionary. Then trains the model on the input data and returns the trained model.
 """
-function fit(X_data, model, FE_params::Dict;verbose::Int=0)
+function fit!(X_data, model, FE_params::Dict;verbose::Int=0)
     
     X, Y = prep_FE(X_data;verbose = verbose);
     # train loop

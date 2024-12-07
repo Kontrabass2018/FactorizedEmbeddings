@@ -9,4 +9,9 @@ pkg>add https://github.com/Kontrabass2018/FactorizedEmbeddings
 Once the package is downloaded and added to your working environment, standard package importation can be called.
 ```julia
 using FactorizedEmbeddings
-``` 
+```
+
+### Example of usage
+```julia
+model = FactorizedEmbeddings.fit(train_data, verbose = 1);
+```

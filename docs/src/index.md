@@ -1,4 +1,5 @@
-### Factorized Embeddings method
+# Factorized Embeddings method
+## Public Interface
 ### Main methods
 ```@docs
 generate_params
@@ -15,6 +16,7 @@ fit_transform
 ```@docs
 infer
 ```
+
 ### Other utility methods
 
 
