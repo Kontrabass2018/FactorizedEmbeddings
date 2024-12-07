@@ -120,7 +120,7 @@ function train!(params, X, Y, model;verbose = 0)
         pearson = my_cor(model(X_), Y_)
         Flux.update!(opt,ps, gs)
         # println("FE $(iter) epoch $(Int(ceil(iter / nminibatches))) - $cursor /$nminibatches - TRAIN loss: $(lossval)\tpearson r: $pearson ELAPSED: $((now() - start_timer).value / 1000 )") : nothing         
-        next!(p; showvalues=[(:loss, lossval), (:pearson, pearson)])
+        next!(p; showvalues=[(:step,iter), (:loss, lossval), (:pearson, pearson)])
     end
     return model 
 end 
