@@ -19,6 +19,9 @@ infer
 
 ### Other utility methods
 
+```@docs
+fit!
+```
 
 ```@docs
 reset_embedding_layer
