@@ -6,9 +6,26 @@ using ProgressMeter
 using Statistics 
 using Dates
 
-export generate_params, fit, fit_transform, infer
+export generate_params, fit, fit_transform, infer, train!, prep_FE, FE_model, reset_embedding_layer
 
 
+
+function my_cor(X::AbstractVector, Y::AbstractVector)
+    sigma_X = std(X)
+    sigma_Y = std(Y)
+    mean_X = mean(X)
+    mean_Y = mean(Y)
+    cov = sum((X .- mean_X) .* (Y .- mean_Y)) / length(X)
+    return cov / sigma_X / sigma_Y
+end 
+
+
+"""
+    prep_FE(data::Matrix, device=gpu; order = "shuffled", verbose = 0)
+
+This method takes the data matrix as input and outputs the vectors X containing two vectors of samples indices and gene indices
+and Y containing the expression values of the sample and the gene.
+"""
 function prep_FE(data::Matrix, device=gpu; order = "shuffled", verbose = 0)
     verbose > 0 && (println("Processing data..."))
     n, m = size(data)
@@ -32,7 +49,12 @@ function prep_FE(data::Matrix, device=gpu; order = "shuffled", verbose = 0)
     return (device(sample_index[id_range]), device(gene_index[id_range])), device(vec(values[id_range]))
 end 
 
+"""
+    FE_model(params::Dict)
 
+This method takes as input a dictionary of hyperparameters instantiates and returns a Flux.Chain type DNN model. 
+This model can then be fed to the train! method to fit the model's parameters to the data. 
+"""
 function FE_model(params::Dict)
     emb_size_1 = params["emb_size_1"]
     emb_size_2 = params["emb_size_2"]
@@ -45,11 +67,6 @@ function FE_model(params::Dict)
         i == 1 ? inpsize = a : inpsize = params["fe_layers_size"][i - 1]
         push!(hlayers, Flux.Dense(inpsize, layer_size, relu))
     end 
-    # hl1 = gpu(Flux.Dense(a, b, relu))
-    # hl2 = gpu(Flux.Dense(b, c, relu))
-    # hl3 = gpu(Flux.Dense(c, d, relu))
-    # hl4 = gpu(Flux.Dense(d, e, relu))
-    # hl5 = gpu(Flux.Dense(e, f, relu))
     outpl = gpu(Flux.Dense(params["fe_layers_size"][end], 1, identity))
     net = gpu(Flux.Chain(
         Flux.Parallel(vcat, emb_layer_1, emb_layer_2),
@@ -58,16 +75,13 @@ function FE_model(params::Dict)
     net 
 end 
 
-function my_cor(X::AbstractVector, Y::AbstractVector)
-    sigma_X = std(X)
-    sigma_Y = std(Y)
-    mean_X = mean(X)
-    mean_Y = mean(Y)
-    cov = sum((X .- mean_X) .* (Y .- mean_Y)) / length(X)
-    return cov / sigma_X / sigma_Y
-end 
 
-function reset_embedding_layer(FE_net, new_embed)
+"""
+    function reset_embedding_layer!(FE_net, new_embed; cp_dev=gpu)
+
+This methods copies the imputed model and returns a model with inputed pre-defined embedding layer.
+"""
+function reset_embedding_layer(FE_net, new_embed; cp_dev=gpu)
     hlayers = deepcopy(FE_net[2:end])
     test_FE = Flux.Chain(
         Flux.Parallel(vcat, 
@@ -75,10 +89,15 @@ function reset_embedding_layer(FE_net, new_embed)
             deepcopy(FE_net[1][2])
         ),
         hlayers...
-    ) |> gpu
+    ) |> cp_dev
     return test_FE    
-end 
+end
 
+"""
+    function train!(params, X, Y, model;verbose = 0)
+
+This methods trains a model with the X and Y training data and returns the trained model.
+"""
 function train!(params, X, Y, model;verbose = 0)
     verbose > 0 && (println("Training model..."))
     nsamples_batchsize = params["nsamples_batchsize"]
@@ -170,6 +189,20 @@ function fit(X_data, FE_params::Dict;verbose::Int=0)
     model = train!(FE_params, X, Y, model;verbose = verbose)
     return model 
 end 
+
+# fit function 
+"""
+    fit(X_data, model, FE_params::Dict)
+
+This function uses the inputed Factorized Embeddings model with pre-defined and imputed hyper-parameter dictionary. Then trains the model on the input data and returns the trained model.
+"""
+function fit(X_data, model, FE_params::Dict;verbose::Int=0)
+    
+    X, Y = prep_FE(X_data;verbose = verbose);
+    # train loop
+    model = train!(FE_params, X, Y, model;verbose = verbose)
+    return model 
+end
 
 
 # fit_transform function 
