@@ -13,5 +13,14 @@ using FactorizedEmbeddings
 
 ### Example of usage
 ```julia
-model = FactorizedEmbeddings.fit(train_data, verbose = 1);
+train_redux = fit_transform(train_data, verbose = 1);
+```
+
+### Advanced usage
+
+```julia
+model_params = generate_params(train_data, nsteps_dim_redux = 20_000)
+model = FE_model(model_params);
+fit!(train_data, model, model_params)
+infer_model = infer(model, train_data, test_data, model_params, verbose = 1)
 ```

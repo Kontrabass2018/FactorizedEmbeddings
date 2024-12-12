@@ -14,20 +14,21 @@ folds = split_train_test(TCGA_data[:,biotypes .== "protein_coding"]);
 
 train_data = folds[1]["train_x"];
 test_data = folds[1]["test_x"];
-include("pca.jl")
-loadings = fit_pca(train_data', 500);
-X_tr = Matrix(transform_pca(train_data', loadings)')
-model_params = generate_params(X_tr, nsteps_dim_redux = 20_000, l2_val = 0.0, nsamples_batchsize=1)
+# include("pca.jl")
+# loadings = fit_pca(train_data', 500);
+# X_tr = Matrix(transform_pca(train_data', loadings)')
+model_params = generate_params(train_data, nsteps_dim_redux = 20_000, nsamples_batchsize=1)
 model = FE_model(model_params);
 
 # init by pca 
-dembed = model[1][1].weight
+# dembed = model[1][1].weight
 zeros(size(dembed))
 # model = reset_embedding_layer(model, dat)
-fit!(X_tr, model, model_params)
+fit!(train_data, model, model_params)
 # model = FactorizedEmbeddings.fit(train_data, model_params;verbose = 1);
 # infer
-model = fit(train_data, generate_params(train_data, nsteps_dim_redux = 20_000, emb_size_2 = 1000, fe_layers_size = [1000,1000,1000]))
+model = fit(train_data, generate_params(train_data, nsteps_dim_redux = 40_000, l2_val =1e-8, emb_size_2 = 1000, fe_layers_size = [1000,1000,1000]))
+
 infer_model, model_phase_1 = FactorizedEmbeddings.infer(model, train_data, test_data, model_params, verbose = 1)
 # plot 
 
