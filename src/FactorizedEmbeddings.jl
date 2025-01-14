@@ -104,21 +104,20 @@ function train!(params, X, Y, model;verbose = 0)
     batchsize = params["ngenes"] * nsamples_batchsize
     nminibatches = Int(floor(params["nsamples"] / nsamples_batchsize))
     opt = Flux.Adam(params["lr"])
+    state = Flux.setup(opt, model) |> gpu 
     p = Progress(params["nsteps"]; showspeed=true)
     for iter in 1:params["nsteps"]
         # Stochastic gradient descent with minibatches
         cursor = (iter -1)  % nminibatches + 1
         
         batch_range = (cursor -1) * batchsize + 1 : cursor * batchsize
-        X_, Y_ = (X[1][batch_range],X[2][batch_range]), Y[batch_range] # Access via "view" : quick
-        ps = Flux.params(model)
-       
-        gs = gradient(ps) do 
-            Flux.mse(model(X_), Y_) + params["l2"] * sum(p -> sum(abs2, p), ps) ## loss
+        X_, Y_ = (X[1][batch_range],X[2][batch_range]), Y[batch_range] # Access via "view" : quick   
+        grads = Flux.gradient(model) do 
+            Flux.mse(model(X_), Y_) + params["l2"] * sum.(abs2, Flux.trainables(model))  ## loss
         end
-        lossval = Flux.mse(model(X_), Y_) + params["l2"] * sum(p -> sum(abs2, p), ps)
+        lossval = Flux.mse(model(X_), Y_) + params["l2"] * sum.(abs2, Flux.trainables(model)) 
         pearson = my_cor(model(X_), Y_)
-        Flux.update!(opt,ps, gs)
+        Flux.update!(state, model, grads[1])
         # println("FE $(iter) epoch $(Int(ceil(iter / nminibatches))) - $cursor /$nminibatches - TRAIN loss: $(lossval)\tpearson r: $pearson ELAPSED: $((now() - start_timer).value / 1000 )") : nothing         
         next!(p; showvalues=[(:step,iter), (:loss, lossval), (:pearson, pearson)])
     end

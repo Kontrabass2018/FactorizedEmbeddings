@@ -27,7 +27,7 @@ zeros(size(embed))
 fit!(train_data, model, model_params)
 # model = FactorizedEmbeddings.fit(train_data, model_params;verbose = 1);
 # infer
-model = fit(train_data, generate_params(train_data, nsteps_dim_redux = 40_000, l2_val =1e-8, emb_size_2 = 1000, fe_layers_size = [1000,1000,1000]))
+model = fit(train_data, generate_params(train_data, nsteps_dim_redux = 40_000, l2_val =1e-8, emb_size_2 = 100, fe_layers_size = [100,100,100]))
 
 infer_model, model_phase_1 = FactorizedEmbeddings.infer(model, train_data, test_data, model_params, verbose = 1)
 # plot 
