@@ -22,7 +22,7 @@ model = FE_model(model_params);
 
 # init by pca 
 # dembed = model[1][1].weight
-zeros(size(dembed))
+zeros(size(embed))
 # model = reset_embedding_layer(model, dat)
 fit!(train_data, model, model_params)
 # model = FactorizedEmbeddings.fit(train_data, model_params;verbose = 1);
