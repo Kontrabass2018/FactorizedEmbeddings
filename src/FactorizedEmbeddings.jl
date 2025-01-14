@@ -112,10 +112,10 @@ function train!(params, X, Y, model;verbose = 0)
         
         batch_range = (cursor -1) * batchsize + 1 : cursor * batchsize
         X_, Y_ = (X[1][batch_range],X[2][batch_range]), Y[batch_range] # Access via "view" : quick   
-        grads = Flux.gradient(model) do 
-            Flux.mse(model(X_), Y_) + params["l2"] * sum.(abs2, Flux.trainables(model))  ## loss
+        grads = Flux.gradient(model) do m 
+            Flux.mse(m(X_), Y_) + params["l2"] * sum(sum.(abs2, Flux.trainables(m)))  ## loss
         end
-        lossval = Flux.mse(model(X_), Y_) + params["l2"] * sum.(abs2, Flux.trainables(model)) 
+        lossval = Flux.mse(model(X_), Y_) + params["l2"] * sum(sum.(abs2, Flux.trainables(model))) 
         pearson = my_cor(model(X_), Y_)
         Flux.update!(state, model, grads[1])
         # println("FE $(iter) epoch $(Int(ceil(iter / nminibatches))) - $cursor /$nminibatches - TRAIN loss: $(lossval)\tpearson r: $pearson ELAPSED: $((now() - start_timer).value / 1000 )") : nothing         

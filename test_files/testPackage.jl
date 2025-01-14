@@ -24,7 +24,7 @@ model = FE_model(model_params);
 # dembed = model[1][1].weight
 # zeros(size(dembed))
 # model = reset_embedding_layer(model, dat)
-fit!(train_data, model, model_params)
+# fit!(train_data, model, model_params)
 # model = FactorizedEmbeddings.fit(train_data, model_params;verbose = 1);
 # infer
 model = fit(train_data, generate_params(train_data, nsteps_dim_redux = 40_000, l2_val =1e-8, emb_size_2 = 100, fe_layers_size = [100,100,100]))
