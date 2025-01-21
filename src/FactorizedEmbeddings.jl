@@ -153,6 +153,32 @@ generate_params(X_data::AbstractArray;
     )
 
 
+    """
+    generate_params(nsamples::Int, ngenes::Int;
+                    emb_size::Int=2, emb_size_2::Int=100, 
+                    nsteps_dim_redux::Int=1000, l2_val::Float64=1e-7, 
+                    fe_layers_size = [100, 50, 50]
+               )
+
+Function that takes input data size and hyper-parameters and outputs a dictonary. 
+"""
+generate_params(nsamples::Int, ngenes::Int;    
+                    emb_size::Int=2, emb_size_2::Int=100, 
+                    nsteps_dim_redux::Int=1000, l2_val::Float64=1e-7,
+                    nsamples_batchsize::Int=1, 
+                    fe_layers_size = [100, 50, 50]
+               ) = return Dict( 
+    ## run infos 
+    # "session_id" => session_id,  "modelid" =>  "$(bytes2hex(sha256("$(now())"))[1:Int(floor(end/3))])",
+    # "outpath"=>outpath, 
+    "machine_id"=>strip(read(`hostname`, String)), # "device" => "$(CUDA.device())", 
+    ## data infos 
+    "nsamples" =>nsamples, "ngenes"=> ngenes,  
+    ## optim infos 
+    "lr" => 5e-3, "l2" =>l2_val,"nsteps" => nsteps_dim_redux, "nsteps_inference" => Int(floor(nsteps_dim_redux * 0.1)), "nsamples_batchsize" => nsamples_batchsize,
+    ## model infos
+    "emb_size_1" => emb_size, "emb_size_2" => emb_size_2, "fe_layers_size"=> fe_layers_size,
+    )
 
 # fit function 
 """
