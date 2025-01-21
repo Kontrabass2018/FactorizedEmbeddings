@@ -74,7 +74,7 @@ for (fid, cond) in enumerate(readdir("../Data/scRNAseq/"))
     conditions = vcat(conditions,[cond for i in 1:nsamples])
     Xs = vcat(Xs, condXs .+ offs)
     Xg = vcat(Xg, condXg)
-    Y = vcat(Y, condY)
+    Y = vcat(Y, condY) 
     offs += nsamples
 end 
 size(Xs)
@@ -82,8 +82,19 @@ X = (gpu(Int64.(Xs)), gpu(Int64.(Xg)))
 Y = log10.(gpu(Float32.(Y)))
 nsamples = maximum(X[1])
 ngenes = maximum(X[2])
-
-FE_params = generate_params_FE(nsamples, ngenes;emb_size=2, batchsize = 40_000, nsteps_dim_redux=20_000)
+Y[1:10]
+FE_params = generate_params_FE(nsamples, ngenes;emb_size=2, batchsize = 40_000, nsteps_dim_redux=40_000)
 model = FE_model(FE_params)
 train_dev!(FE_params, X, Y, model, verbose = 1)
 
+large_embed = cpu(model[1][1].weight)
+large_labs =conditions 
+fig = Figure(size = (1024,800));
+ax = Axis(fig[1,1],title="Trained Embryoid Body Single-Cell RNA-seq data with FE during 20,000 steps", xlabel = "Cell-Embed-1", ylabel="Cell-Embed-2", aspect = 1);
+colors = range(colorant"blue",stop=colorant"yellow", length=5)
+# first plot train embed with circles.
+for (i, group_lab) in enumerate(unique(large_labs))
+    group = large_labs .== group_lab
+    scatter!(ax, large_embed[1,group], large_embed[2,group], strokewidth = 0.1, color = colors[i], label = group_lab, marker = :circle)
+end 
+CairoMakie.save("../figures/scRNAseq_embryoid.png", fig)
