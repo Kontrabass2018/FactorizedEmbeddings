@@ -15,6 +15,7 @@ using Flux
 using DataFrames
 using CairoMakie
 
+using Distributions 
 function load_tcga_data(infilename; shfl = true)
     infile = h5open(infilename)
     TCGA_data = infile["data"][:,:]
