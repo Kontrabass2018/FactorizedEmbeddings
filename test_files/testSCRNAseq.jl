@@ -1,6 +1,8 @@
 ## get file directories, load matrices.
-
-
+cd("test_files")
+using Pkg
+Pkg.activate(".")
+include("functions.jl")
 using FactorizedEmbeddings
 
 generate_params_FE(nsamples::Int, ngenes::Int;    
@@ -62,13 +64,14 @@ function get_coord_mat(fpath)
     X_sample = dat[:,2] 
     X_gene = dat[:,1]
     Y = dat[:,3]
-    return X_sample, X_gene, Y
+    return dat, X_sample, X_gene, Y
 end 
 
-offs, Xs, Xg, Y, conditions = 0, [], [], [], []
+
+offs, Xs, Xg, Y, conditions, datasets = 0, [], [], [], [], []
 for (fid, cond) in enumerate(readdir("../Data/scRNAseq/"))
     fpath = "../Data/scRNAseq/$cond/matrix.mtx"
-    condXs, condXg, condY = get_coord_mat(fpath)
+    df, condXs, condXg, condY = get_coord_mat(fpath)
     nsamples = maximum(condXs)
     println("$cond \t nsamples = $nsamples")
     conditions = vcat(conditions,[cond for i in 1:nsamples])
@@ -76,14 +79,26 @@ for (fid, cond) in enumerate(readdir("../Data/scRNAseq/"))
     Xg = vcat(Xg, condXg)
     Y = vcat(Y, condY) 
     offs += nsamples
+    datasets = vcat(datasets, df)
 end 
+# remove extrema cells 
+# get histogram of count per barcode
+
+# keep most varying genes 20%
+
+# library size normalization
+
+# 
+function normalise()
+end
+
 size(Xs)
 X = (gpu(Int64.(Xs)), gpu(Int64.(Xg)))
 Y = log10.(gpu(Float32.(Y)))
 nsamples = maximum(X[1])
 ngenes = maximum(X[2])
-Y[1:10]
-FE_params = generate_params_FE(nsamples, ngenes;emb_size=2, batchsize = 40_000, nsteps_dim_redux=40_000)
+niter = 300_000
+FE_params = generate_params_FE(nsamples, ngenes;emb_size=2, batchsize = 40_000, nsteps_dim_redux=niter)
 model = FE_model(FE_params)
 train_dev!(FE_params, X, Y, model, verbose = 1)
 
@@ -97,4 +112,5 @@ for (i, group_lab) in enumerate(unique(large_labs))
     group = large_labs .== group_lab
     scatter!(ax, large_embed[1,group], large_embed[2,group], strokewidth = 0.1, color = colors[i], label = group_lab, marker = :circle)
 end 
-CairoMakie.save("../figures/scRNAseq_embryoid.png", fig)
+fig
+CairoMakie.save("../figures/scRNAseq_embryoid_$niter.png", fig)
